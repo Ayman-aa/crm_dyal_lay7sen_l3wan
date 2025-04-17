@@ -13,7 +13,7 @@ exports.getLeads = async (req, res) => {
   }
 };
 
-// Update lead status or notes
+// Update lead status or notes kifma kan
 exports.updateLeadStatus = async (req, res) => {
   const { status, notes } = req.body;
   
