@@ -68,20 +68,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const { token, user: userData } = await loginUser(email, password);
-      localStorage.setItem('token', token);
-      setUser(userData);
-      setIsAuthenticated(true);
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
-      setIsAuthenticated(false);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    setError(null);
+    const { token, user: userData } = await loginUser(email, password);
+    localStorage.setItem('token', token);
+    setUser(userData as User);
+    setIsAuthenticated(true);
+  } catch (err: any) {
+    setError(err.message || 'Login failed. Please check your credentials.');
+    setIsAuthenticated(false);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const logout = () => {
     localStorage.removeItem('token');

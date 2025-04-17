@@ -14,10 +14,12 @@ const LoginPage: React.FC = () => {
 
   // Redirect if already authenticated
   useEffect(() => {
+    console.log('Auth state changed:', { isAuthenticated, user });
     if (isAuthenticated && user) {
       const redirectPath = user.role === 'employer' 
         ? '/employer/dashboard' 
         : '/manager/dashboard';
+      console.log('Attempting to redirect to:', redirectPath);
       navigate(redirectPath);
     }
   }, [isAuthenticated, user, navigate]);

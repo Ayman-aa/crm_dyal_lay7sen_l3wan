@@ -18,8 +18,8 @@ const LeadsList: React.FC = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
   // Filters
-  const [selectedManager, setSelectedManager] = useState<string>('all');
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedManager, setSelectedManager] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
   
     const statusOptions = [
     { value: 'all', label: 'All Statuses' }, 
@@ -34,10 +34,11 @@ const LeadsList: React.FC = () => {
       setLoading(true);
       
       // Apply filters if selected
+      // When filtering leads based on status
       const filters: { managerId?: string; status?: string } = {};
       if (selectedManager && selectedManager !== 'all') filters.managerId = selectedManager;
       if (selectedStatus && selectedStatus !== 'all') filters.status = selectedStatus;
-      
+
       const data = await getLeads(filters);
       setLeads(data);
       setError(null);
@@ -51,7 +52,7 @@ const LeadsList: React.FC = () => {
   const fetchManagers = async () => {
     try {
       const data = await getManagers();
-      setManagers(data.filter(manager => manager && manager.id)); // Filter out any managers without valid IDs
+      setManagers(data);
     } catch (err: any) {
       console.error('Failed to load managers:', err);
     }
@@ -118,17 +119,14 @@ const LeadsList: React.FC = () => {
                 Filter by Manager
               </label>
               <Select value={selectedManager} onValueChange={setSelectedManager}>
-                <SelectTrigger id="manager-select">
+                <SelectTrigger>
                   <SelectValue placeholder="All Managers" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem key="all-managers" value="all">All Managers</SelectItem>
-                  {managers.map((manager, index) => (
-                    <SelectItem 
-                      key={manager.id ? `manager-${manager.id}` : `manager-index-${index}`} 
-                      value={manager.id || `unknown-${index}`}
-                    >
-                      {manager.name || 'Unnamed Manager'}
+                  {managers.map((manager) => (
+                    <SelectItem key={manager.id} value={manager.id}>
+                      {manager.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

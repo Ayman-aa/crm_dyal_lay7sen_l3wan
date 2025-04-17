@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Save, ArrowLeft } from 'lucide-react';
+import { Save, ArrowLeft, AlertCircle } from 'lucide-react';
 
 const CreateEditLead: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +23,11 @@ const CreateEditLead: React.FC = () => {
     managerId: '',
     notes: ''
   });
+
+    const [validationError, setValidationError] = useState<string | null>(null);
+  // Check if form is valid - require managerId to be non-empty
+  const isFormValid = formData.companyName && formData.contactName && formData.contactEmail && formData.managerId;
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,6 +47,8 @@ const CreateEditLead: React.FC = () => {
         // Set default manager if available and not in edit mode
         if (data.length > 0 && !isEditMode) {
           setFormData(prev => ({ ...prev, managerId: data[0].id }));
+        } else if (data.length === 0) {
+          setValidationError('No managers available. Please create a manager before adding leads.');
         }
       } catch (err: any) {
         console.error('Failed to load managers:', err);
@@ -88,15 +95,28 @@ const CreateEditLead: React.FC = () => {
   };
 
   const handleSelectChange = (name: string, value: string) => {
+    console.log(`Setting ${name} to:`, value, 'Type:', typeof value);
     setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'managerId' && !value) {
+      setValidationError('Please select a manager');
+    } else {
+      setValidationError(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate managerId first - moved to the top of the function
+    if (!formData.managerId) {
+      setValidationError('Please select a manager');
+      return;
+    }
+    
     try {
       setLoading(true);
       setError(null);
+      setValidationError(null);
       
       if (isEditMode && id) {
         await updateLead(id, formData);
@@ -130,6 +150,23 @@ const CreateEditLead: React.FC = () => {
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
+        </div>
+      )}
+
+      {validationError && (
+        <div className="bg-amber-100 border border-amber-400 text-amber-800 px-4 py-3 rounded mb-4 flex items-center">
+          <AlertCircle className="h-4 w-4 mr-2" />
+          {validationError}
+          {validationError.includes('No managers available') && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigate('/employer/managers/create')}
+              className="ml-4"
+            >
+              Create Manager
+            </Button>
+          )}
         </div>
       )}
 
@@ -203,23 +240,31 @@ const CreateEditLead: React.FC = () => {
               
               <div className="space-y-2">
                 <label htmlFor="managerId" className="text-sm font-medium">
-                  Assign Manager
+                  Assign Manager <span className="text-red-500">*</span>
                 </label>
                 <Select 
-                  value={formData.managerId} 
+                  value={String(formData.managerId)} 
                   onValueChange={(value) => handleSelectChange('managerId', value)}
+                  required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={`w-full ${!formData.managerId ? "border-red-500" : ""}`}>
                     <SelectValue placeholder="Select a manager" />
                   </SelectTrigger>
                   <SelectContent>
-                    {managers.map((manager) => (
-                      <SelectItem key={manager.id} value={manager.id}>
-                        {manager.name}
-                      </SelectItem>
-                    ))}
+                    {managers.length > 0 ? (
+                      managers.map((manager) => (
+                        <SelectItem key={manager.id} value={String(manager.id)}>
+                          {manager.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="no-managers" disabled>No managers available</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
+                {!formData.managerId && (
+                  <p className="text-red-500 text-xs mt-1">Manager selection is required</p>
+                )}
               </div>
             </div>
             
@@ -246,7 +291,7 @@ const CreateEditLead: React.FC = () => {
             </Button>
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || !isFormValid || managers.length === 0}
             >
               {loading ? 'Saving...' : (
                 <>
