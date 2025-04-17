@@ -9,7 +9,10 @@ exports.login = async (req, res) => {
 
   try {
     // Check if user exists
+    console.log(email);
+    
     let user = await User.findOne({ email });
+    console.log(user);
     if (!user) {
       return res.status(400).json({ msg: 'Invalid credentials' });
     }
