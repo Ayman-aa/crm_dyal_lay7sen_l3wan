@@ -5,11 +5,11 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 // Pages
 import LoginPage from './pages/auth/LoginPage';
-
-// Note: Your other pages will be imported here
-// For now, let's use placeholder components for other pages
-const EmployerDashboard = () => <div>Employer Dashboard</div>;
-const ManagerDashboard = () => <div>Manager Dashboard</div>;
+import EmployerDashboard from './pages/employer/Dashboard';
+import ManagersList from './pages/employer/ManagersList';
+import LeadsList from './pages/employer/LeadsList';
+import ManagerDashboard from './pages/manager/Dashboard';
+import ManagerLeadsPage from './pages/manager/LeadsPage';
 
 function App() {
   return (
@@ -26,7 +26,8 @@ function App() {
               <ProtectedRoute allowedRoles={['employer']}>
                 <Routes>
                   <Route path="dashboard" element={<EmployerDashboard />} />
-                  {/* Add your other employer routes here */}
+                  <Route path="managers" element={<ManagersList />} />
+                  <Route path="leads" element={<LeadsList />} />
                   <Route path="*" element={<Navigate to="/employer/dashboard" replace />} />
                 </Routes>
               </ProtectedRoute>
@@ -40,7 +41,7 @@ function App() {
               <ProtectedRoute allowedRoles={['manager']}>
                 <Routes>
                   <Route path="dashboard" element={<ManagerDashboard />} />
-                  {/* Add your other manager routes here */}
+                  <Route path="leads" element={<ManagerLeadsPage />} />
                   <Route path="*" element={<Navigate to="/manager/dashboard" replace />} />
                 </Routes>
               </ProtectedRoute>

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useContext, ReactNode, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { User, loginUser, getCurrentUser, logoutUser } from '../lib/api/auth';
 
@@ -32,20 +32,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const queryClient = useQueryClient();
+  
+  // Add this ref to track if the initial auth check has been performed
+  const initialAuthCheckDone = useRef(false);
 
-  // Check if user is already logged in on mount
+  // Check if user is already logged in on mount - only once
   useEffect(() => {
+    // Skip if we've already done the initial check
+    if (initialAuthCheckDone.current) return;
+
     const checkLoggedIn = async () => {
       try {
         const userData = await getCurrentUser();
-        setUser(userData);
-        setIsAuthenticated(true);
-      } catch (err) {
-        console.error('Not authenticated:', err);
+        if (userData) {
+          setUser(userData);
+          setIsAuthenticated(true);
+        } else {
+          // User is not authenticated, but this is not an error state
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      } catch (err: any) {
+        console.error('Authentication error:', err.message);
         setUser(null);
         setIsAuthenticated(false);
+        // Only set error for unexpected errors
+        setError(err.message);
       } finally {
         setLoading(false);
+        initialAuthCheckDone.current = true;
       }
     };
 
@@ -72,12 +87,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       await logoutUser();
+    } catch (err: any) {
+      console.error('Logout error:', err.message);
+    } finally {
+      // Always clear state regardless of API success
       setUser(null);
       setIsAuthenticated(false);
       // Clear all queries in the cache when user logs out
       queryClient.clear();
-    } catch (err: any) {
-      console.error('Logout error:', err);
     }
   };
 

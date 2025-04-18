@@ -17,16 +17,22 @@ export const loginUser = async (email: string, password: string): Promise<User> 
     const response = await api.post<LoginResponse>('/auth/login', { email, password });
     return response.data.user;
   } catch (error: any) {
-    throw new Error(error.msg || 'Login failed');
+    const errorMessage = error.msg || error.message || 'Login failed';
+    throw new Error(errorMessage);
   }
 };
 
-export const getCurrentUser = async (): Promise<User> => {
+export const getCurrentUser = async (): Promise<User | null> => {
   try {
     const response = await api.get<User>('/auth/me');
     return response.data;
   } catch (error: any) {
-    throw new Error(error.msg || 'Failed to get user data');
+    // If 401 or 403, it means user is not authenticated - don't treat as error
+    if (error.status === 401 || error.status === 403) {
+      return null;
+    }
+    const errorMessage = error.msg || error.message || 'Failed to get user data';
+    throw new Error(errorMessage);
   }
 };
 
@@ -34,6 +40,7 @@ export const logoutUser = async (): Promise<void> => {
   try {
     await api.post('/auth/logout');
   } catch (error: any) {
-    throw new Error(error.msg || 'Logout failed');
+    const errorMessage = error.msg || error.message || 'Logout failed';
+    throw new Error(errorMessage);
   }
 };

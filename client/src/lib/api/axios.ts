@@ -12,14 +12,20 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const { response } = error;
+    // Don't automatically redirect to login on 401 errors
+    // Let the components/context handle this to prevent redirect loops
     
-    // Handle authentication errors
-    if (response && response.status === 401) {
-      window.location.href = '/login';
+    if (error.response) {
+      return Promise.reject({
+        status: error.response.status,
+        msg: error.response.data?.msg || 'Server error',
+        ...error.response.data
+      });
     }
     
-    return Promise.reject(error.response?.data || error);
+    return Promise.reject({
+      msg: 'Network error. Please check your connection.'
+    });
   }
 );
 
