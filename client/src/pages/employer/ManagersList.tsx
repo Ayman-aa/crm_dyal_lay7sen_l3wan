@@ -9,6 +9,7 @@ import {
   CreateManagerPayload,
   UpdateManagerPayload
 } from '@/lib/api/employer';
+import { queryKeys } from '@/lib/api/queryClient';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { 
   Table, 
@@ -76,7 +77,7 @@ const ManagersList: React.FC = () => {
 
   // Fetch managers
   const { data: managers, isLoading, error } = useQuery({
-    queryKey: ['managers'],
+    queryKey: queryKeys.managers,
     queryFn: getManagers,
   });
 
@@ -84,7 +85,9 @@ const ManagersList: React.FC = () => {
   const createManagerMutation = useMutation({
     mutationFn: (data: CreateManagerPayload) => createManager(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['managers'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.managers });
+      // Also invalidate dashboard stats since they might depend on manager count
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
       setIsCreateDialogOpen(false);
       createForm.reset();
       setFormError(null);
@@ -99,7 +102,7 @@ const ManagersList: React.FC = () => {
     mutationFn: ({ id, data }: { id: string; data: UpdateManagerPayload }) => 
       updateManager(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['managers'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.managers });
       setIsUpdateDialogOpen(false);
       updateForm.reset();
       setSelectedManager(null);
@@ -114,7 +117,10 @@ const ManagersList: React.FC = () => {
   const deleteManagerMutation = useMutation({
     mutationFn: (id: string) => deleteManager(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['managers'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.managers });
+      // Also invalidate leads data which might depend on the deleted manager
+      queryClient.invalidateQueries({ queryKey: queryKeys.leads() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
       setIsDeleteDialogOpen(false);
       setSelectedManager(null);
     },

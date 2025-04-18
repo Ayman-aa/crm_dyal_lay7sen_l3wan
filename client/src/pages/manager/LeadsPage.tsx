@@ -39,6 +39,7 @@ import {
   CircleDot
 } from 'lucide-react';
 import { useForm, Controller } from 'react-hook-form';
+import { queryKeys } from '@/lib/api/queryClient';
 
 // Form type for lead status updates
 type LeadUpdateFormData = {
@@ -66,7 +67,7 @@ const LeadsPage: React.FC = () => {
     isLoading, 
     error 
   } = useQuery({
-    queryKey: ['managerLeads'],
+    queryKey: queryKeys.managerLeads,
     queryFn: getManagerLeads,
   });
 
@@ -75,7 +76,7 @@ const LeadsPage: React.FC = () => {
     mutationFn: ({ id, data }: { id: string; data: UpdateLeadStatusPayload }) => 
       updateLeadStatus(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['managerLeads'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.managerLeads });
       setIsUpdateDialogOpen(false);
       updateForm.reset();
       setSelectedLead(null);

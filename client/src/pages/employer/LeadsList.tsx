@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/api/queryClient';
 import { 
   getLeads,
   getManagers,
@@ -102,7 +103,7 @@ const LeadsList: React.FC = () => {
     isLoading: isLeadsLoading, 
     error: leadsError 
   } = useQuery({
-    queryKey: ['leads', filters],
+    queryKey: queryKeys.leads(filters),
     queryFn: () => getLeads(filters),
   });
 
@@ -111,7 +112,7 @@ const LeadsList: React.FC = () => {
     data: managers,
     isLoading: isManagersLoading 
   } = useQuery({
-    queryKey: ['managers'],
+    queryKey: queryKeys.managers,
     queryFn: getManagers,
   });
 
@@ -119,7 +120,9 @@ const LeadsList: React.FC = () => {
   const createLeadMutation = useMutation({
     mutationFn: (data: CreateLeadPayload) => createLead(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      // Invalidate all queries that depend on leads data
+      queryClient.invalidateQueries({ queryKey: queryKeys.leads() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
       setIsCreateDialogOpen(false);
       createForm.reset();
       setFormError(null);
@@ -134,7 +137,8 @@ const LeadsList: React.FC = () => {
     mutationFn: ({ id, data }: { id: string; data: UpdateLeadPayload }) => 
       updateLead(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.leads() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
       setIsUpdateDialogOpen(false);
       updateForm.reset();
       setSelectedLead(null);
@@ -149,7 +153,8 @@ const LeadsList: React.FC = () => {
   const deleteLeadMutation = useMutation({
     mutationFn: (id: string) => deleteLead(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.leads() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats });
       setIsDeleteDialogOpen(false);
       setSelectedLead(null);
     },
@@ -379,7 +384,7 @@ const LeadsList: React.FC = () => {
                           <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
                           <SelectItem value="COMPLETED">Completed</SelectItem>
                           <SelectItem value="CANCELED">Canceled</SelectItem>
-                        </SelectContent>
+                          </SelectContent>
                       </Select>
                     )}
                   />

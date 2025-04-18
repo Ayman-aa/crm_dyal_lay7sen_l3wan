@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getManagerLeads } from '@/lib/api/manager';
+import { queryKeys } from '@/lib/api/queryClient';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Clock, XCircle, AlertCircle, CircleDot } from 'lucide-react';
@@ -8,7 +9,7 @@ import { Link } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
   const { data: leads, isLoading, error } = useQuery({
-    queryKey: ['managerLeads'],
+    queryKey: queryKeys.managerLeads,
     queryFn: getManagerLeads,
   });
 

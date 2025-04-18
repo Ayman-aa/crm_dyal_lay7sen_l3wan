@@ -2,13 +2,14 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getDashboardStats } from '@/lib/api/employer';
+import { queryKeys } from '@/lib/api/queryClient';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Clock, XCircle } from 'lucide-react';
 
 const EmployerDashboard: React.FC = () => {
   const { data: stats, isLoading, error } = useQuery({
-    queryKey: ['dashboardStats'],
+    queryKey: queryKeys.dashboardStats,
     queryFn: getDashboardStats,
   });
 

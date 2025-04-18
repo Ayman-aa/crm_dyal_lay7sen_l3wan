@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { User, loginUser, getCurrentUser, logoutUser } from '../lib/api/auth';
+import { queryClient } from '../lib/api/queryClient';
 
 interface AuthContextType {
   user: User | null;
@@ -31,7 +32,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const queryClient = useQueryClient();
   
   // Add this ref to track if the initial auth check has been performed
   const initialAuthCheckDone = useRef(false);
@@ -87,14 +87,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       await logoutUser();
-    } catch (err: any) {
-      console.error('Logout error:', err.message);
-    } finally {
-      // Always clear state regardless of API success
       setUser(null);
       setIsAuthenticated(false);
       // Clear all queries in the cache when user logs out
       queryClient.clear();
+    } catch (err: any) {
+      console.error('Logout error:', err);
     }
   };
 
