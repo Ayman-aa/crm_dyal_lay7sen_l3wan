@@ -5,19 +5,8 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true // Important for cookies
 });
-
-// Request interceptor to add token to headers
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers['x-auth-token'] = token;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 // Response interceptor to handle common errors
 api.interceptors.response.use(
@@ -27,7 +16,6 @@ api.interceptors.response.use(
     
     // Handle authentication errors
     if (response && response.status === 401) {
-      localStorage.removeItem('token');
       window.location.href = '/login';
     }
     

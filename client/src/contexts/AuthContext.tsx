@@ -1,24 +1,14 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
-import { loginUser, getCurrentUser } from '../lib/api/auth';
-
-// Define user types and auth context types
-type UserRole = 'employer' | 'manager';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  createdAt: string;
-}
+import { useQueryClient } from '@tanstack/react-query';
+import { User, loginUser, getCurrentUser, logoutUser } from '../lib/api/auth';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<User>;
+  logout: () => Promise<void>;
   clearError: () => void;
 }
 
@@ -41,25 +31,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const queryClient = useQueryClient();
 
   // Check if user is already logged in on mount
   useEffect(() => {
     const checkLoggedIn = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
       try {
         const userData = await getCurrentUser();
         setUser(userData);
         setIsAuthenticated(true);
-        setLoading(false);
       } catch (err) {
-        console.error('Error checking authentication status:', err);
-        localStorage.removeItem('token');
+        console.error('Not authenticated:', err);
+        setUser(null);
         setIsAuthenticated(false);
+      } finally {
         setLoading(false);
       }
     };
@@ -67,26 +52,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkLoggedIn();
   }, []);
 
-  const login = async (email: string, password: string) => {
-  try {
-    setLoading(true);
-    setError(null);
-    const { token, user: userData } = await loginUser(email, password);
-    localStorage.setItem('token', token);
-    setUser(userData as User);
-    setIsAuthenticated(true);
-  } catch (err: any) {
-    setError(err.message || 'Login failed. Please check your credentials.');
-    setIsAuthenticated(false);
-  } finally {
-    setLoading(false);
-  }
-};
+  const login = async (email: string, password: string): Promise<User> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const userData = await loginUser(email, password);
+      setUser(userData);
+      setIsAuthenticated(true);
+      return userData;
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please check your credentials.');
+      setIsAuthenticated(false);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
-    setIsAuthenticated(false);
+  const logout = async () => {
+    try {
+      await logoutUser();
+      setUser(null);
+      setIsAuthenticated(false);
+      // Clear all queries in the cache when user logs out
+      queryClient.clear();
+    } catch (err: any) {
+      console.error('Logout error:', err);
+    }
   };
 
   const clearError = () => setError(null);

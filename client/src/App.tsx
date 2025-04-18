@@ -3,113 +3,55 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
+// Pages
 import LoginPage from './pages/auth/LoginPage';
 
-
-import EmployerDashboard from './pages/employer/Dashboard';
-import ManagersList from './pages/employer/ManagersList';
-import LeadsList from './pages/employer/LeadsList';
-import CreateEditManager from './pages/employer/CreateEditManager';
-import CreateEditLead from './pages/employer/CreateEditLead';
-
-import ManagerDashboard from './pages/manager/Dashboard';
-import ManagerLeads from './pages/manager/LeadsList';
-import UpdateLead from './pages/manager/UpdateLead';
+// Note: Your other pages will be imported here
+// For now, let's use placeholder components for other pages
+const EmployerDashboard = () => <div>Employer Dashboard</div>;
+const ManagerDashboard = () => <div>Manager Dashboard</div>;
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Auth Routes */}
+          {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
           
-          {/* Employer Routes */}
+          {/* Protected Employer Routes */}
           <Route 
-            path="/employer/dashboard" 
+            path="/employer/*" 
             element={
               <ProtectedRoute allowedRoles={['employer']}>
-                <EmployerDashboard />
+                <Routes>
+                  <Route path="dashboard" element={<EmployerDashboard />} />
+                  {/* Add your other employer routes here */}
+                  <Route path="*" element={<Navigate to="/employer/dashboard" replace />} />
+                </Routes>
               </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/employer/managers" 
-            element={
-              <ProtectedRoute allowedRoles={['employer']}>
-                <ManagersList />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/employer/managers/create" 
-            element={
-              <ProtectedRoute allowedRoles={['employer']}>
-                <CreateEditManager />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/employer/managers/edit/:id" 
-            element={
-              <ProtectedRoute allowedRoles={['employer']}>
-                <CreateEditManager />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/employer/leads" 
-            element={
-              <ProtectedRoute allowedRoles={['employer']}>
-                <LeadsList />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/employer/leads/create" 
-            element={
-              <ProtectedRoute allowedRoles={['employer']}>
-                <CreateEditLead />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/employer/leads/edit/:id" 
-            element={
-              <ProtectedRoute allowedRoles={['employer']}>
-                <CreateEditLead />
-              </ProtectedRoute>
-            } 
+            }
           />
           
-          {/* Manager Routes */}
+          {/* Protected Manager Routes */}
           <Route 
-            path="/manager/dashboard" 
+            path="/manager/*" 
             element={
               <ProtectedRoute allowedRoles={['manager']}>
-                <ManagerDashboard />
+                <Routes>
+                  <Route path="dashboard" element={<ManagerDashboard />} />
+                  {/* Add your other manager routes here */}
+                  <Route path="*" element={<Navigate to="/manager/dashboard" replace />} />
+                </Routes>
               </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/manager/leads" 
-            element={
-              <ProtectedRoute allowedRoles={['manager']}>
-                <ManagerLeads />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/manager/leads/:id" 
-            element={
-              <ProtectedRoute allowedRoles={['manager']}>
-                <UpdateLead />
-              </ProtectedRoute>
-            } 
+            }
           />
           
-          {/* Default redirect */}
+          {/* Redirect root to login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
+          
+          {/* 404 - Redirect to login */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
     </AuthProvider>

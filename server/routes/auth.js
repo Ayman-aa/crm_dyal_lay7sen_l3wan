@@ -8,7 +8,12 @@ const authController = require('../controllers/authController');
 // @access  Public
 router.post('/login', authController.login);
 
-// @route   GET api/me
+// @route   POST api/auth/logout
+// @desc    Logout user & clear cookie
+// @access  Public
+router.post('/logout', authController.logout);
+
+// @route   GET api/auth/me
 // @desc    Get current user profile
 // @access  Private
 router.get('/me', auth, authController.getCurrentUser);

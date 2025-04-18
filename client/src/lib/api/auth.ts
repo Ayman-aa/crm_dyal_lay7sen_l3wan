@@ -1,35 +1,39 @@
 import api from './axios';
 
-interface LoginRequest {
+export interface User {
+  id: string;
+  name: string;
   email: string;
-  password: string;
+  role: 'employer' | 'manager';
+  createdAt: string;
 }
 
-interface LoginResponse {
-  token: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-    createdAt: string;
-  };
+export interface LoginResponse {
+  user: User;
 }
 
-export const loginUser = async (email: string, password: string) => {
+export const loginUser = async (email: string, password: string): Promise<User> => {
   try {
     const response = await api.post<LoginResponse>('/auth/login', { email, password });
-    return response.data;
+    return response.data.user;
   } catch (error: any) {
-    throw new Error(error.message || 'Login failed');
+    throw new Error(error.msg || 'Login failed');
   }
 };
 
-export const getCurrentUser = async () => {
+export const getCurrentUser = async (): Promise<User> => {
   try {
-    const response = await api.get('/auth/me');
+    const response = await api.get<User>('/auth/me');
     return response.data;
   } catch (error: any) {
-    throw new Error(error.message || 'Failed to get user data');
+    throw new Error(error.msg || 'Failed to get user data');
+  }
+};
+
+export const logoutUser = async (): Promise<void> => {
+  try {
+    await api.post('/auth/logout');
+  } catch (error: any) {
+    throw new Error(error.msg || 'Logout failed');
   }
 };
