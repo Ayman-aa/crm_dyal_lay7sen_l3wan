@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { User, loginUser, getCurrentUser, logoutUser } from '../lib/api/auth';
+import { User, loginUser, getCurrentUser, logoutUser, refreshToken } from '../lib/api/auth';
 import { queryClient } from '../lib/api/queryClient';
 
 interface AuthContextType {
@@ -53,6 +53,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setIsAuthenticated(false);
         }
       } catch (err: any) {
+        // If access token expired, try to refresh
+        if (err.status === 401) {
+          try {
+            const refreshedUser = await refreshToken();
+            setUser(refreshedUser);
+            setIsAuthenticated(true);
+            return;
+          } catch (refreshErr) {
+            // If refresh fails, user is not authenticated
+            console.error('Not authenticated:', refreshErr);
+          }
+        }
+        // For any other error
         console.error('Authentication error:', err.message);
         setUser(null);
         setIsAuthenticated(false);

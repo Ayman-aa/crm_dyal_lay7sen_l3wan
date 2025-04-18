@@ -3,6 +3,11 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const authController = require('../controllers/authController');
 
+// @route   POST api/auth/refresh
+// @desc    Refresh access token using refresh token
+// @access  Public (but requires refresh token cookie)
+router.post('/refresh', authController.refreshToken);
+
 // @route   POST api/auth/login
 // @desc    Authenticate user & get token
 // @access  Public

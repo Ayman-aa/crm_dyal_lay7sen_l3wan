@@ -12,6 +12,11 @@ export interface LoginResponse {
   user: User;
 }
 
+export interface RefreshResponse {
+  success: boolean;
+  user: User;
+}
+
 export const loginUser = async (email: string, password: string): Promise<User> => {
   try {
     const response = await api.post<LoginResponse>('/auth/login', { email, password });
@@ -32,6 +37,16 @@ export const getCurrentUser = async (): Promise<User | null> => {
       return null;
     }
     const errorMessage = error.msg || error.message || 'Failed to get user data';
+    throw new Error(errorMessage);
+  }
+};
+
+export const refreshToken = async (): Promise<User> => {
+  try {
+    const response = await api.post<RefreshResponse>('/auth/refresh');
+    return response.data.user;
+  } catch (error: any) {
+    const errorMessage = error.msg || error.message || 'Failed to refresh token';
     throw new Error(errorMessage);
   }
 };
