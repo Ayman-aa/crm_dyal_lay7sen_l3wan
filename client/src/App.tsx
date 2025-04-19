@@ -15,45 +15,47 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<LoginPage />} />
-          
-          {/* Protected Employer Routes */}
-          <Route 
-            path="/employer/*" 
-            element={
-              <ProtectedRoute allowedRoles={['employer']}>
-                <Routes>
-                  <Route path="dashboard" element={<EmployerDashboard />} />
-                  <Route path="managers" element={<ManagersList />} />
-                  <Route path="leads" element={<LeadsList />} />
-                  <Route path="*" element={<Navigate to="/employer/dashboard" replace />} />
-                </Routes>
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Protected Manager Routes */}
-          <Route 
-            path="/manager/*" 
-            element={
-              <ProtectedRoute allowedRoles={['manager']}>
-                <Routes>
-                  <Route path="dashboard" element={<ManagerDashboard />} />
-                  <Route path="leads" element={<ManagerLeadsPage />} />
-                  <Route path="*" element={<Navigate to="/manager/dashboard" replace />} />
-                </Routes>
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Redirect root to login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          
-          {/* 404 - Redirect to login */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
+        <div className="w-full min-h-screen bg-background text-foreground">
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            
+            {/* Protected Employer Routes */}
+            <Route 
+              path="/employer/*" 
+              element={
+                <ProtectedRoute allowedRoles={['employer']}>
+                  <Routes>
+                    <Route path="dashboard" element={<EmployerDashboard />} />
+                    <Route path="managers" element={<ManagersList />} />
+                    <Route path="leads" element={<LeadsList />} />
+                    <Route path="*" element={<Navigate to="/employer/dashboard" replace />} />
+                  </Routes>
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Protected Manager Routes */}
+            <Route 
+              path="/manager/*" 
+              element={
+                <ProtectedRoute allowedRoles={['manager']}>
+                  <Routes>
+                    <Route path="dashboard" element={<ManagerDashboard />} />
+                    <Route path="leads" element={<ManagerLeadsPage />} />
+                    <Route path="*" element={<Navigate to="/manager/dashboard" replace />} />
+                  </Routes>
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Redirect root to login */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            
+            {/* 404 - Redirect to login */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </div>
       </Router>
     </AuthProvider>
   );

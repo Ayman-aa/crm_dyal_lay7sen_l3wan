@@ -3,10 +3,6 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const authController = require('../controllers/authController');
 
-// @route   POST api/auth/refresh
-// @desc    Refresh access token using refresh token
-// @access  Public (but requires refresh token cookie)
-router.post('/refresh', authController.refreshToken);
 
 // @route   POST api/auth/login
 // @desc    Authenticate user & get token
@@ -22,5 +18,9 @@ router.post('/logout', authController.logout);
 // @desc    Get current user profile
 // @access  Private
 router.get('/me', auth, authController.getCurrentUser);
+// @route   POST api/auth/refresh
+// @desc    Refresh access token using refresh token
+// @access  Public (but requires refresh token cookie)
+router.post('/refresh', authController.refreshToken);
 
 module.exports = router;

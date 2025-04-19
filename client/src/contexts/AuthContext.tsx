@@ -38,47 +38,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Check if user is already logged in on mount - only once
   useEffect(() => {
-    // Skip if we've already done the initial check
+    // Exit early if check has already been completed
+    if (initialAuthCheckDone.current) return;
+    
+    checkLoggedIn();
+
+    // Clean up function
+    return () => {
+      // Additional cleanup if needed
+    };
+  }, []); // Empty dependency array to ensure it runs only once
+
+  const checkLoggedIn = async () => {
+    // Important: Skip if we've already checked
     if (initialAuthCheckDone.current) return;
 
-    const checkLoggedIn = async () => {
-      try {
-        const userData = await getCurrentUser();
-        if (userData) {
-          setUser(userData);
-          setIsAuthenticated(true);
-        } else {
-          // User is not authenticated, but this is not an error state
-          setUser(null);
-          setIsAuthenticated(false);
-        }
-      } catch (err: any) {
-        // If access token expired, try to refresh
-        if (err.status === 401) {
-          try {
-            const refreshedUser = await refreshToken();
-            setUser(refreshedUser);
-            setIsAuthenticated(true);
-            return;
-          } catch (refreshErr) {
-            // If refresh fails, user is not authenticated
-            console.error('Not authenticated:', refreshErr);
-          }
-        }
-        // For any other error
-        console.error('Authentication error:', err.message);
+    try {
+      setLoading(true);
+      const userData = await getCurrentUser();
+      if (userData) {
+        setUser(userData);
+        setIsAuthenticated(true);
+      } else {
+        // User is not authenticated, but this is not an error state
         setUser(null);
         setIsAuthenticated(false);
-        // Only set error for unexpected errors
-        setError(err.message);
-      } finally {
-        setLoading(false);
-        initialAuthCheckDone.current = true;
       }
-    };
-
-    checkLoggedIn();
-  }, []);
+    } catch (err: any) {
+      console.error('Auth check error:', err);
+      // For any error, just mark as not authenticated
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setLoading(false);
+      // Very important: mark that we've done the check
+      initialAuthCheckDone.current = true;
+    }
+  };
 
   const login = async (email: string, password: string): Promise<User> => {
     try {

@@ -1,111 +1,179 @@
-import React, { ReactNode } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, User, BarChart, Users, FileText } from 'lucide-react';
+import {
+  Layout,
+  LayoutContent,
+  LayoutHeader,
+  LayoutSidebar,
+} from '@/components/ui/layout';
+import {
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  Home,
+  Users,
+  FileText,
+  User,
+  Menu,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface DashboardLayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
-  
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const isEmployer = user?.role === 'employer';
-  
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
+  const isManager = user?.role === 'manager';
 
   const isActivePath = (path: string) => {
     return location.pathname.startsWith(path);
   };
 
+  const toggleSidebar = () => {
+    setCollapsed(!collapsed);
+  };
+
   return (
-    <div className="flex h-screen bg-gray-100">
+    <Layout>
+      {/* Mobile header */}
+      <LayoutHeader className="lg:hidden flex items-center justify-between p-4 border-b">
+        <div className="flex items-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
+          <span className="text-lg font-semibold ml-2">CRM System</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">{user?.name}</span>
+          <Button variant="ghost" size="icon" onClick={() => logout()}>
+            <LogOut className="h-5 w-5" />
+          </Button>
+        </div>
+      </LayoutHeader>
+
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-md">
-        <div className="p-4 border-b">
-          <h1 className="text-xl font-bold">CRM System</h1>
+      <LayoutSidebar 
+        collapsed={collapsed}
+        className={`bg-sidebar text-sidebar-foreground ${mobileMenuOpen ? 'block' : 'hidden'} lg:block transition-all duration-300 ease-in-out`}
+      >
+        {/* Logo & Brand */}
+        <div className={`flex items-center justify-between p-4 border-b border-sidebar-border ${collapsed ? 'justify-center' : ''}`}>
+          {!collapsed && <span className="text-xl font-bold">CRM System</span>}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden lg:flex"
+            onClick={toggleSidebar}
+          >
+            {collapsed ? <ChevronRight /> : <ChevronLeft />}
+          </Button>
         </div>
 
-        <div className="py-4">
-          <nav className="mt-2">
-            {isEmployer ? (
-              <>
+        {/* User Info */}
+        <div className={`flex items-center gap-3 p-4 border-b border-sidebar-border ${collapsed ? 'justify-center' : ''}`}>
+          <div className="bg-sidebar-accent text-sidebar-accent-foreground h-10 w-10 rounded-full flex items-center justify-center font-semibold">
+            {user?.name?.charAt(0).toUpperCase() || 'U'}
+          </div>
+          {!collapsed && (
+            <div>
+              <p className="font-medium">{user?.name}</p>
+              <p className="text-xs text-sidebar-foreground/70 capitalize">{user?.role}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Navigation */}
+        <nav className="p-2">
+          {isEmployer && (
+            <ul className="space-y-1">
+              <li>
                 <Link 
                   to="/employer/dashboard" 
-                  className={`flex items-center px-6 py-2 ${isActivePath('/employer/dashboard') ? 'bg-primary text-primary-foreground' : 'hover:bg-gray-100'}`}
+                  className={`flex items-center px-4 py-2 rounded-md ${isActivePath('/employer/dashboard') ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'} ${collapsed ? 'justify-center' : ''}`}
+                  onClick={() => setMobileMenuOpen(false)}
                 >
-                  <BarChart className="w-4 h-4 mr-2" />
-                  Dashboard
+                  <Home className="w-5 h-5 mr-2" />
+                  {!collapsed && <span>Dashboard</span>}
                 </Link>
-                <Link 
-                  to="/employer/leads" 
-                  className={`flex items-center px-6 py-2 ${isActivePath('/employer/leads') ? 'bg-primary text-primary-foreground' : 'hover:bg-gray-100'}`}
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  Leads
-                </Link>
+              </li>
+              <li>
                 <Link 
                   to="/employer/managers" 
-                  className={`flex items-center px-6 py-2 ${isActivePath('/employer/managers') ? 'bg-primary text-primary-foreground' : 'hover:bg-gray-100'}`}
+                  className={`flex items-center px-4 py-2 rounded-md ${isActivePath('/employer/managers') ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'} ${collapsed ? 'justify-center' : ''}`}
+                  onClick={() => setMobileMenuOpen(false)}
                 >
-                  <Users className="w-4 h-4 mr-2" />
-                  Managers
+                  <Users className="w-5 h-5 mr-2" />
+                  {!collapsed && <span>Managers</span>}
                 </Link>
-              </>
-            ) : (
-              <>
+              </li>
+              <li>
+                <Link 
+                  to="/employer/leads" 
+                  className={`flex items-center px-4 py-2 rounded-md ${isActivePath('/employer/leads') ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'} ${collapsed ? 'justify-center' : ''}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <FileText className="w-5 h-5 mr-2" />
+                  {!collapsed && <span>Leads</span>}
+                </Link>
+              </li>
+            </ul>
+          )}
+
+          {isManager && (
+            <ul className="space-y-1">
+              <li>
                 <Link 
                   to="/manager/dashboard" 
-                  className={`flex items-center px-6 py-2 ${isActivePath('/manager/dashboard') ? 'bg-primary text-primary-foreground' : 'hover:bg-gray-100'}`}
+                  className={`flex items-center px-4 py-2 rounded-md ${isActivePath('/manager/dashboard') ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'} ${collapsed ? 'justify-center' : ''}`}
+                  onClick={() => setMobileMenuOpen(false)}
                 >
-                  <BarChart className="w-4 h-4 mr-2" />
-                  Dashboard
+                  <Home className="w-5 h-5 mr-2" />
+                  {!collapsed && <span>Dashboard</span>}
                 </Link>
+              </li>
+              <li>
                 <Link 
                   to="/manager/leads" 
-                  className={`flex items-center px-6 py-2 ${isActivePath('/manager/leads') ? 'bg-primary text-primary-foreground' : 'hover:bg-gray-100'}`}
+                  className={`flex items-center px-4 py-2 rounded-md ${isActivePath('/manager/leads') ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'} ${collapsed ? 'justify-center' : ''}`}
+                  onClick={() => setMobileMenuOpen(false)}
                 >
-                  <FileText className="w-4 h-4 mr-2" />
-                  My Leads
+                  <FileText className="w-5 h-5 mr-2" />
+                  {!collapsed && <span>My Leads</span>}
                 </Link>
-              </>
-            )}
-          </nav>
+              </li>
+            </ul>
+          )}
+        </nav>
+
+        {/* Logout Button */}
+        <div className={`mt-auto p-4 border-t border-sidebar-border ${collapsed ? 'flex justify-center' : ''}`}>
+          <Button 
+            variant="outline" 
+            onClick={() => logout()}
+            className={`${collapsed ? 'w-10 p-0 justify-center' : 'w-full'} border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
+          >
+            <LogOut className={`h-5 w-5 ${collapsed ? '' : 'mr-2'}`} />
+            {!collapsed && <span>Logout</span>}
+          </Button>
         </div>
-      </div>
+      </LayoutSidebar>
 
       {/* Main Content */}
-      <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Header */}
-        <header className="flex items-center justify-between px-6 py-4 bg-white shadow">
-          <h2 className="text-lg font-medium">
-            {isEmployer ? 'Employer Dashboard' : 'Manager Dashboard'}
-          </h2>
-          
-          <div className="flex items-center">
-            <div className="flex items-center mr-4">
-              <User className="w-5 h-5 mr-2" />
-              <span>{user?.name}</span>
-            </div>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
-          </div>
-        </header>
-
-        {/* Content */}
-        <main className="flex-1 overflow-auto p-6">
-          {children}
-        </main>
-      </div>
-    </div>
+      <LayoutContent className="p-6">
+        {children}
+      </LayoutContent>
+    </Layout>
   );
 };
 

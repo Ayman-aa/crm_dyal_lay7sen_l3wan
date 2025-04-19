@@ -67,11 +67,9 @@ api.interceptors.response.use(
         // Retry the original request
         return axios(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, redirect to login
-        window.location.href = '/login';
+        // Don't automatically redirect here
+        isRefreshing = false;  // Reset the refreshing flag
         return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
       }
     }
 
